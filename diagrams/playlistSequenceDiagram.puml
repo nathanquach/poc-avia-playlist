@@ -1,0 +1,57 @@
+@startuml
+title Webplex Avia Player (WAP) - Sequence Diagram
+
+participant ReactPlayer [
+  =WAP
+  ----
+  ""React Component""
+]
+database "User Platform" as UserPlatform
+participant "Avia Instance" as Avia
+participant "Web Plugin" as WebPlugin
+queue "Playlist Service" as PlaylistService
+database Topaz
+participant "Playlist Plugin" as PlaylistPlugin
+
+autonumber
+
+ReactPlayer -[#red]> UserPlatform: Request Media token
+UserPlatform -[#red]> ReactPlayer: Media token
+note left
+  Token has 5-minute-TTL
+end note
+ReactPlayer -> Avia: Create
+
+Avia -> Avia: Auto-play or User presses play
+Avia -> WebPlugin: Register plugin
+Avia -> PlaylistPlugin: Register plugin
+
+WebPlugin -> PlaylistService: Send Video Configs
+note right
+  This is a queue.
+  It processes all video items one by one synchronously.
+end note
+
+loop
+  PlaylistService -[#red]> UserPlatform: Request new Media token if the one from step 2 expires
+  UserPlatform -[#red]> PlaylistService: Media token
+  PlaylistService -[#red]> Topaz: Request Mica
+  Topaz -[#red]> PlaylistService: Mica response
+  note left
+    Mica contains a Manifest URL with 5-minute-TTL
+  end note
+  PlaylistService -> PlaylistPlugin: Add Resource
+end
+
+PlaylistService -> WebPlugin: Ready
+WebPlugin -> PlaylistPlugin: Start
+PlaylistPlugin -> Avia: Start
+
+loop
+  Avia -[#red]> Topaz: Request Manifest
+  Topaz -[#red]> Avia: Manifest
+  Avia -> Avia: Start video
+  WebPlugin -> Avia: Set text & audio track
+end
+
+@enduml
