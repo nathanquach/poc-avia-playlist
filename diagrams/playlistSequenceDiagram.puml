@@ -41,7 +41,7 @@ Avia -> PlaylistPlugin: Register plugin
 WebPlugin -> PlaylistService: Send Video Configs
 note right
   This is a queue.
-  It processes all video items one by one synchronously.
+  It processes all video items one by one asynchronously.
 end note
 
 loop
