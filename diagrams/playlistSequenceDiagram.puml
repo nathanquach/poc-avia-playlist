@@ -4,14 +4,26 @@ title Webplex Avia Player (WAP) - Sequence Diagram
 participant ReactPlayer [
   =WAP
   ----
-  ""React Component""
+  ""dls""
 ]
 database "User Platform" as UserPlatform
-participant "Avia Instance" as Avia
-participant "Web Plugin" as WebPlugin
+participant Avia [
+  =Avia Instance
+  ----
+  ""avia-js""
+]
+participant WebPlugin [
+  =Web Plugin
+  ----
+  ""webplex-avia-plugins""
+]
 queue "Playlist Service" as PlaylistService
 database Topaz
-participant "Playlist Plugin" as PlaylistPlugin
+participant PlaylistPlugin [
+  =Playlist Plugin
+  ----
+  ""avia-js""
+]
 
 autonumber
 
