@@ -1,3 +1,9 @@
+const VIDEOS = [
+  'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+  'https://playertest.longtailvideo.com/adaptive/elephants_dream_v4/redundant.m3u8'
+]
+
+// create Avia instance
 function createPlayer() {
   return avia.createVideoPlayer({
     container: '#videoPresentationContainer',
@@ -6,7 +12,7 @@ function createPlayer() {
       avia.gam.plugin(),
       avia.hls.plugin(),
       avia.dash.plugin(),
-      avia.playlist.plugin(),
+      avia.playlist.plugin({ debug: true }),
       avia.ui.plugin()
     ],
     logLevel: avia.LogLevel.DEBUG,
@@ -14,63 +20,50 @@ function createPlayer() {
   })
 }
 
-// Provide a resource to the player
-function playVideo(player) {
-  const resource = {
-    location: {
-      mediaUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-    }
-  };
-
-  player.attachResource(resource)
-    .then(() => {
-      // resource successfully attached to player
-      // video presentation may be clicked to start play
-    })
-    .catch(e => {
-      // a problem prevented attaching the resource
-      console.log(e);
-    })
-}
-
-// Provide a resource to the playlist plugin
+// Provide a resource to the playlist plugin & start player
 function playPlaylist(player) {
-  const myPlaylist = player.getPlugin(avia.playlist.PLAYLIST)
-
   const configs = [
     {
       location: {
-        mediaUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-      }
-    },
-    {
-      location: {
-        mediaUrl: 'https://playertest.longtailvideo.com/adaptive/elephants_dream_v4/redundant.m3u8',
+        mediaUrl: VIDEOS[0], // First video uses actual url to play
       }
     }
   ];
 
+  // subsequent item will have place holder url
+  for(let i = VIDEOS.length - 1; i > 0; i--) {
+    configs.push({ location: { mediaUrl: 'place holder' }})
+  }
+
+  const myPlaylist = player.getPlugin(avia.playlist.PLAYLIST)
   myPlaylist.addResources(configs)
+
   myPlaylist.start()
+
+  window.playlist = myPlaylist
 }
 
-const handlePlaylistEvent = (e) => {
-  if (e.detail.id === PLAYLIST) {
-
-      switch(e.detail.type) {
-
-          case PLAYLIST_ADVANCED:
-              //
-              break;
-          // etc.
-
-      }
+// Handle playlist event
+function handlePlaylistEvent(e) {
+  if (e.detail.id === avia.playlist.PLAYLIST) {
+    switch (e.detail.type) {
+      case avia.playlist.PlaylistEvent.PLAYLIST_ADVANCED:
+        // NOTE: The problem here is the extremly short timeframe to update next resource url. Performing reading e.detail.data.index could delay the operation.
+        playlist.list[1].location.mediaUrl = VIDEOS[1]
+        break;
+    }
   }
 }
 
+
 createPlayer()
   .then(player => {
+    window.player = player
     playPlaylist(player);
+
+    Object.values(avia.PlayerEvent).forEach(event => {
+      player.on(event, handlePlaylistEvent)
+    })
   })
   .catch(e => {
     // problem with player creation
