@@ -48,10 +48,21 @@ function handlePlaylistEvent(e) {
   if (e.detail.id === avia.playlist.PLAYLIST) {
     switch (e.detail.type) {
       case avia.playlist.PlaylistEvent.PLAYLIST_ADVANCED:
-        // NOTE: The problem here is the extremly short timeframe to update next resource url. Performing reading e.detail.data.index could delay the operation.
-        playlist.list[1].location.mediaUrl = VIDEOS[1]
+        console.debug('>d: PLAYLIST_ADVANCED')
+        // NOTE: Updating mediaUrl here is too late, player already loads the resource with place holder url.
+        if (playlist.currentIndex > -1) {
+          playlist.list[1].location.mediaUrl = VIDEOS[1]
+        }
         break;
     }
+  }
+
+  if (e.type === avia.PlayerEvent.RESOURCE_END) {
+    console.debug('>d: RESOURCE_END')
+    // updating mediaUrl here works, however we don't know if the action is next or prev. So cannot detect target index.
+    const index = playlist.currentIndex + 1
+    playlist.list[index].location.mediaUrl = VIDEOS[index]
+    playlist.list.forEach((item, index) => console.debug('>d: playlist item manifest: ', index, item.location.mediaUrl))
   }
 }
 
@@ -60,6 +71,8 @@ createPlayer()
   .then(player => {
     window.player = player
     playPlaylist(player);
+
+    playlist.list.forEach((item, index) => console.debug('>d: playlist item manifest: ', index, item.location.mediaUrl))
 
     Object.values(avia.PlayerEvent).forEach(event => {
       player.on(event, handlePlaylistEvent)

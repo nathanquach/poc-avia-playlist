@@ -119,3 +119,6 @@ There are 2 options to update `playlist.list[index].location.mediaUrl`
 
 Both have drawbacks of their own.
 
+`PLAYLIST_ADVANCED` is not usable due to the timing. It occurs after playlist already loads the next video's resource. So we cannot modify using this event.
+`RESOURCE_END` is usable, however, this event does not inform us of next video index. So we will need additional information from player UI to know which video to load next to update its manifest url.
+
