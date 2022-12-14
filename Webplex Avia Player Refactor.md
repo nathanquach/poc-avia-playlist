@@ -108,10 +108,13 @@ Current logic fetches all video manifest before playback. For a playlist with 10
 - Clip 10: Manifest TTL 4
 
 
-So in playlist life time of 10', we send 10 (at 0) + 6 (at 4') + 2 (at 8')= 18 requests to Topaz mica.
+So in playlist life time of 10', we send 10 (at 0) + 6 (at 4') + 2 (at 8')= **18 requests to Topaz mica**.
 If at the end of clip 10, we replay the playlist from 1, the cycle will repeat.
 
-I have experiemented with using Player Event to update clip manifest just in time instead of at the player creation.
+----
+I have experiemented with using Player Event to update clip manifest **just-in-time** instead of at the player creation.
+
+The idea is to only supply first video manifest url, while 9 others will have "place holder" url and we will replace these fake url with real value when it's their turns to play.
 
 There are 2 options to update `playlist.list[index].location.mediaUrl`
 - `PLAYLIST_ADVANCED`: when playlist prev/next 
@@ -120,5 +123,7 @@ There are 2 options to update `playlist.list[index].location.mediaUrl`
 Both have drawbacks of their own.
 
 `PLAYLIST_ADVANCED` is not usable due to the timing. It occurs after playlist already loads the next video's resource. So we cannot modify using this event.
-`RESOURCE_END` is usable, however, this event does not inform us of next video index. So we will need additional information from player UI to know which video to load next to update its manifest url.
 
+`RESOURCE_END` is **usable**, however, this event does not inform us of next video index. So we will need additional information from player UI to know which video to load next to update its manifest url.
+
+Conclusion, we need to talk to AviaJs team to seek a better approach.
