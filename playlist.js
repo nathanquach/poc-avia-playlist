@@ -61,8 +61,10 @@ function handlePlaylistEvent(e) {
     console.debug('>d: RESOURCE_END')
     // updating mediaUrl here works, however we don't know if the action is next or prev. So cannot detect target index.
     const index = playlist.currentIndex + 1
-    playlist.list[index].location.mediaUrl = VIDEOS[index]
-    playlist.list.forEach((item, index) => console.debug('>d: playlist item manifest: ', index, item.location.mediaUrl))
+    if (index <= VIDEOS.length) {
+      playlist.list[index].location.mediaUrl = VIDEOS[index]
+      playlist.list.forEach((item, index) => console.debug('>d: playlist item manifest: ', index, item.location.mediaUrl))
+    }
   }
 }
 
